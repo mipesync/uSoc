@@ -1,20 +1,18 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { Document } from "mongoose";
-import { Message } from "./message.schema";
-import { User } from "./user.schema";
+import { Document } from "mongoose";
 
 export type RoomDocument = Room & Document;
 
 @Schema()
 export class Room{
-    @Prop()
+    @Prop({ required: true })
     name: string;
 
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], required: true })
-    users: User[];
+    @Prop({ required: true })
+    usersId: string[];
 
-    @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Message' }], required: true })
-    messages: Message[];
+    @Prop()
+    messagesId: string[];
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
