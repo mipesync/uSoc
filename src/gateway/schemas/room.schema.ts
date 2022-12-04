@@ -10,9 +10,6 @@ export class Room{
 
     @Prop({ required: true })
     usersId: string[];
-
-    @Prop()
-    messagesId: string[];
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

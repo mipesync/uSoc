@@ -1,17 +1,72 @@
 import { Logger, OnModuleInit } from "@nestjs/common";
-import { MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server } from 'socket.io'
-import { NewMessage } from "./dto/newMessage.dto";
+import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
+import { Server, Socket } from 'socket.io'
+import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
+import { CreateRoomDto } from "./dto/createRoom.dto";
+import { JoinToRoomDto } from "./dto/joinToRoom.dto";
+import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
+import { NewMessageDto } from "./dto/newMessage.dto";
+import { GatewayService } from "./gateway.service";
 
 @WebSocketGateway()
-export class AddGateway implements OnModuleInit {
+export class AppGateway implements OnModuleInit {
+    constructor(private readonly gatewayService: GatewayService) {}
+
     @WebSocketServer()
     private server: Server;
     private logger: Logger = new Logger('AppGateway');
     
+    @SubscribeMessage('newMessage')
+    async onSendMessage(@MessageBody() messageDto: NewMessageDto) {
+        this.server.to(messageDto.roomId).emit('onSendMessage', messageDto);
+        await this.gatewayService.newMessage(messageDto);
+    }
+
+    @SubscribeMessage('createRoom')
+    async onCreateRoom(@MessageBody() roomDto: CreateRoomDto, @ConnectedSocket() socket: Socket) {
+        let room = await this.gatewayService.createRoom(roomDto);
+        
+        socket.join(room.id);
+
+        this.logger.log(`Чат "${roomDto.name}" был создан`);
+
+        this.server.to(room.id).emit('onCreateRoom', {
+            message: `Чат "${roomDto.name}" был создан`
+        });
+    }
+
+    @SubscribeMessage('joinToRoom')
+    async onJoinToRoom(@MessageBody() joinToRoomDto: JoinToRoomDto, @ConnectedSocket() socket: Socket) {
+        socket.join(joinToRoomDto.roomId);
+        this.logger.log(`${joinToRoomDto.userId} присоединился к чату`);
+        this.server.to(joinToRoomDto.roomId).emit('onJoinToRoom', {
+            message: `${joinToRoomDto.userId} присоединился к чату`
+        });
+        await this.gatewayService.joinToRoom(joinToRoomDto);
+    }
+
+    @SubscribeMessage('leaveFromRoom')
+    async onLeaveFromRoom(@MessageBody() leaveFromRoomDto: LeaveFromRoomDto, @ConnectedSocket() socket: Socket) {
+        socket.leave(leaveFromRoomDto.roomId);
+        this.logger.log(`${leaveFromRoomDto.userId} покинул чат`);
+        this.server.to(leaveFromRoomDto.roomId).emit('onLeaveFromRoom', {
+            message: `${leaveFromRoomDto.userId} покинул чат`
+        });
+        await this.gatewayService.leaveFromRoom(leaveFromRoomDto);
+    }
+
+    @SubscribeMessage('connectToRooms')
+    async onConnectToRooms(@MessageBody() connectToRoomsDto: ConnectToRoomsDto, @ConnectedSocket() socket: Socket) {
+        let rooms = await this.gatewayService.getUserRooms(connectToRoomsDto.userId);
+        rooms.forEach(room => {
+            socket.join(room.id);
+        });
+        this.logger.log(rooms);
+    }
+    
     onModuleInit() {
         this.server.on('connection', socket => {
-            this.logger.log(`Client ${socket.id} has been connected`);
+            this.logger.log(`Клиент ${socket.id} был подключен`);
         });
     }
 }

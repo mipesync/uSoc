@@ -16,6 +16,9 @@ export class Message{
 
     @Prop({ required: true })
     userId: string;
+
+    @Prop({ required: true })
+    roomId: string;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

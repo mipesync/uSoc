@@ -1,12 +1,4 @@
-import { Controller, Get, Put } from '@nestjs/common';
-import { UserService } from './user/user.service';
+import { Controller } from '@nestjs/common';
 
 @Controller()
-export class AppController {
-    constructor(private readonly userService: UserService) {}
-
-    @Put('update-avatar')
-    async updateAvatar(){
-        
-    }
-}
+export class AppController {}

@@ -1,6 +1,6 @@
 import { IsDate, IsNotEmpty } from "class-validator";
 
-export class NewMessage {
+export class NewMessageDto {
     @IsNotEmpty()
     text: string;
 
