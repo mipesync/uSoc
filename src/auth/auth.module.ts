@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Message, MessageSchema } from '../gateway/schemas/message.schema';
-import { Room, RoomSchema } from '../gateway/schemas/room.schema';
 import { User, UserSchema } from './schemas/user.schema';
 
 @Module({

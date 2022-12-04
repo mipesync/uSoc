@@ -5,22 +5,15 @@ import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
-import { NewMessageDto } from "./dto/newMessage.dto";
-import { GatewayService } from "./gateway.service";
+import { RoomGatewayService } from "./room.gateway.service";
 
 @WebSocketGateway()
-export class AppGateway implements OnModuleInit {
-    constructor(private readonly gatewayService: GatewayService) {}
+export class RoomGateway implements OnModuleInit {
+    constructor(private readonly gatewayService: RoomGatewayService) {}
 
     @WebSocketServer()
     private server: Server;
-    private logger: Logger = new Logger('AppGateway');
-    
-    @SubscribeMessage('newMessage')
-    async onSendMessage(@MessageBody() messageDto: NewMessageDto) {
-        this.server.to(messageDto.roomId).emit('onSendMessage', messageDto);
-        await this.gatewayService.newMessage(messageDto);
-    }
+    private logger: Logger = new Logger('RoomGateway');
 
     @SubscribeMessage('createRoom')
     async onCreateRoom(@MessageBody() roomDto: CreateRoomDto, @ConnectedSocket() socket: Socket) {
@@ -61,7 +54,6 @@ export class AppGateway implements OnModuleInit {
         rooms.forEach(room => {
             socket.join(room.id);
         });
-        this.logger.log(rooms);
     }
     
     onModuleInit() {
