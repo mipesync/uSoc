@@ -1,15 +1,19 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
+import { writeFile } from "fs";
 import { Model } from "mongoose";
+import { extname } from "path";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
+import { UpdateRoomNameDto } from "./dto/updateRoomName.dto";
 import { Room, RoomDocument } from "./schemas/room.schema";
 
 @Injectable()
 export class RoomGatewayService {
-    constructor(@InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) {}
+    constructor(@InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) { }
 
+    //TODO: Добавить ссылку на аву по дефолту
     async createRoom(createRoomDto: CreateRoomDto): Promise<RoomDocument> {
         let room = await this.roomModel.create(createRoomDto);
         room.usersId.push(createRoomDto.userId);
@@ -35,7 +39,15 @@ export class RoomGatewayService {
     }
 
     async getUserRooms(userId: string): Promise<RoomDocument[]> {
-        let rooms = await this.roomModel.find({ usersId: userId});
+        let rooms = await this.roomModel.find({ usersId: userId });
         return rooms;
+    }
+
+    async updateRoomName(updateRoomNameDto: UpdateRoomNameDto) {
+        let room = await this.roomModel.findById(updateRoomNameDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        room.name = updateRoomNameDto.name;
+        room.save();
     }
 }

@@ -1,6 +1,10 @@
 - авторизация @done
     - запомнить меня @done
     - замена refresh token'a @done
+    - Telegram oAuth
+    - VK oAuth
+    - Google oAuth
+    - OK oAuth
 - управление профилем
     - получение инфы
         - получить по id

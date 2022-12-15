@@ -5,6 +5,7 @@ import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
+import { UpdateRoomNameDto } from "./dto/updateRoomName.dto";
 import { RoomGatewayService } from "./room.gateway.service";
 
 @WebSocketGateway()
@@ -56,6 +57,22 @@ export class RoomGateway implements OnModuleInit {
         });
     }
     
+    @SubscribeMessage('updateRoomName')
+    async onUpdateRoomName(@MessageBody() updateRoomNameDto: UpdateRoomNameDto) {
+        await this.gatewayService.updateRoomName(updateRoomNameDto);
+        this.logger.log(`Имя чата ${updateRoomNameDto.roomId} было изменено на ${updateRoomNameDto.name}`);
+        this.server.to(updateRoomNameDto.roomId).emit('onUpdateRoomName', {
+            roomId: updateRoomNameDto.roomId,
+            roomName: updateRoomNameDto,
+            message: `Имя чата было изменено на ${updateRoomNameDto.name}`
+        });
+    }
+    //TODO: Фотку грузим через контроллер, потом через сокет рассылаем ссылку на аву
+    @SubscribeMessage('updateRoomAvatar')
+    async onUpdateRoomAvatar() {
+
+    }
+
     onModuleInit() {
         this.server.on('connection', socket => {
             this.logger.log(`Клиент ${socket.id} был подключен`);
