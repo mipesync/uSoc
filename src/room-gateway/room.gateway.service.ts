@@ -1,8 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { writeFile } from "fs";
 import { Model } from "mongoose";
-import { extname } from "path";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
@@ -13,7 +11,6 @@ import { Room, RoomDocument } from "./schemas/room.schema";
 export class RoomGatewayService {
     constructor(@InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) { }
 
-    //TODO: Добавить ссылку на аву по дефолту
     async createRoom(createRoomDto: CreateRoomDto): Promise<RoomDocument> {
         let room = await this.roomModel.create(createRoomDto);
         room.usersId.push(createRoomDto.userId);

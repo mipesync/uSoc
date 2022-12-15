@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { writeFile } from 'fs';
+import { unlink, writeFile } from 'fs';
 import { Model } from 'mongoose';
 import { extname, join } from 'path';
 import { concat } from 'rxjs';
@@ -22,6 +22,12 @@ export class RoomService {
         writeFile(join(_fileRootPath, _fileName), file.buffer, (err) => {
             if (err) {
                 return console.log(err);
+            }
+        });
+
+        unlink(_fileRootPath + room.avatarUrl, (err) => {
+            if (err){
+                console.log(err);
             }
         });
 
