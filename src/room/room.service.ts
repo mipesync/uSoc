@@ -4,8 +4,9 @@ import { unlink, writeFile } from 'fs';
 import { Model } from 'mongoose';
 import { extname, join } from 'path';
 import { concat } from 'rxjs';
-import { Room, RoomDocument } from 'src/room-gateway/schemas/room.schema';
+import { Room, RoomDocument } from 'src/room/schemas/room.schema';
 import { v4 as uuid } from 'uuid';
+import { DeleteUserDto } from '../room-gateway/dto/deleteUser.dto';
 
 const _fileRootPath: string = './storage/room/avatars/'
 

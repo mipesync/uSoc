@@ -1,8 +1,7 @@
-import { Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, ParseFilePipe, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, FileTypeValidator, HttpCode, HttpStatus, Param, ParseFilePipe, Post, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
-import { join } from 'path';
-import { concat } from 'rxjs';
+import { DeleteUserDto } from '../room-gateway/dto/deleteUser.dto';
 import { RoomService } from './room.service';
 
 @Controller('room')
@@ -23,5 +22,11 @@ export class RoomController {
         let response = req.protocol.concat('://', req.headers['host'], fileUrl);
 
         return {fileUrl: response};
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Delete('deleteUser/:roomId')
+    async deleteUser(@Param('roomId') userId: string, @Body() deleteUserDto: DeleteUserDto){
+        
     }
 }

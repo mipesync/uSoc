@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Room, RoomDocument } from "src/room-gateway/schemas/room.schema";
+import { Room, RoomDocument } from "src/room/schemas/room.schema";
 import { NewMessageDto } from "./dto/newMessage.dto";
 import { Message, MessageDocument } from "./schemas/message.schema";
 

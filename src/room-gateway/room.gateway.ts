@@ -1,8 +1,10 @@
 import { Logger, OnModuleInit } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io'
+import { TLSSocket } from "tls";
 import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
+import { DeleteUserDto } from "./dto/deleteUser.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
 import { UpdateRoomAvatarDto } from "./dto/updateRoomAvatar.dto";
@@ -22,9 +24,6 @@ export class RoomGateway implements OnModuleInit {
         let room = await this.gatewayService.createRoom(roomDto);
         
         socket.join(room.id);
-
-        this.logger.log(`Чат "${roomDto.name}" был создан`);
-
         this.server.to(room.id).emit('onCreateRoom', {
             message: `Чат "${roomDto.name}" был создан`
         });
@@ -33,7 +32,7 @@ export class RoomGateway implements OnModuleInit {
     @SubscribeMessage('joinToRoom')
     async onJoinToRoom(@MessageBody() joinToRoomDto: JoinToRoomDto, @ConnectedSocket() socket: Socket) {
         socket.join(joinToRoomDto.roomId);
-        this.logger.log(`${joinToRoomDto.userId} присоединился к чату`);
+
         this.server.to(joinToRoomDto.roomId).emit('onJoinToRoom', {
             message: `${joinToRoomDto.userId} присоединился к чату`
         });
@@ -43,7 +42,7 @@ export class RoomGateway implements OnModuleInit {
     @SubscribeMessage('leaveFromRoom')
     async onLeaveFromRoom(@MessageBody() leaveFromRoomDto: LeaveFromRoomDto, @ConnectedSocket() socket: Socket) {
         socket.leave(leaveFromRoomDto.roomId);
-        this.logger.log(`${leaveFromRoomDto.userId} покинул чат`);
+
         this.server.to(leaveFromRoomDto.roomId).emit('onLeaveFromRoom', {
             message: `${leaveFromRoomDto.userId} покинул чат`
         });
@@ -59,14 +58,14 @@ export class RoomGateway implements OnModuleInit {
     }
     
     @SubscribeMessage('updateRoomName')
-    async onUpdateRoomName(@MessageBody() updateRoomNameDto: UpdateRoomNameDto) {
-        await this.gatewayService.updateRoomName(updateRoomNameDto);
-        
+    async onUpdateRoomName(@MessageBody() updateRoomNameDto: UpdateRoomNameDto) {        
         this.server.to(updateRoomNameDto.roomId).emit('onUpdateRoomName', {
             roomId: updateRoomNameDto.roomId,
             roomName: updateRoomNameDto,
             message: `Имя чата было изменено на ${updateRoomNameDto.name}`
         });
+
+        await this.gatewayService.updateRoomName(updateRoomNameDto);
     }
     
     @SubscribeMessage('updateRoomAvatar')
@@ -77,8 +76,29 @@ export class RoomGateway implements OnModuleInit {
         });
     }
 
+    @SubscribeMessage('deleteFromRoom')
+    async onDeleteFromRoom(@MessageBody() deleteUserDto: DeleteUserDto, @ConnectedSocket() socket: Socket) {
+        await this.gatewayService.deleteUser(deleteUserDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                message: e.message
+            });
+
+            stop();
+        });
+
+        this.server.sockets.sockets.forEach((socket) => {
+            if(socket.id === deleteUserDto.targetConnectionId)
+                socket.leave(deleteUserDto.roomId);
+        });
+
+        this.server.to(deleteUserDto.roomId).emit('onDeleteFromRoom', {
+            message: `${deleteUserDto.origin} исключил ${deleteUserDto.target}`
+        });
+    }
+
     onModuleInit() {
         this.server.on('connection', socket => {
+            this.server.to(socket.id).emit('onConnection', {connectionId: socket.id});
             this.logger.log(`Клиент ${socket.id} был подключен`);
         });
     }
