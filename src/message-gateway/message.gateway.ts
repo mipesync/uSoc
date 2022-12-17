@@ -2,6 +2,7 @@ import { ForbiddenException, Logger, OnModuleInit } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
+import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
 import { MessageGateWayService } from "./message.gateway.service";
 
@@ -35,6 +36,23 @@ export class MessageGateway implements OnModuleInit {
 
         this.server.to(deleteMessageDto.roomId).emit('onDeleteMessage', {
             messageId: deleteMessageDto.messageId
+        });
+    }
+
+    @SubscribeMessage('editMessage')
+    async onEditMessage(@MessageBody() editMessageDto: EditMessageDto, @ConnectedSocket() socket: Socket) {
+        await this.messageService.editMessage(editMessageDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
+                message: e.message
+            });
+
+            stop();
+        });
+
+        this.server.to(editMessageDto.roomId).emit('onEditMessage', {
+            messageId: editMessageDto.messageId,
+            text: editMessageDto.text
         });
     }
 

@@ -5,6 +5,7 @@ import { Permissions } from "src/permissions-manager/mask/permissions";
 import { PermissionsManager } from "src/permissions-manager/permissions.manager";
 import { Room, RoomDocument } from "src/room/schemas/room.schema";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
+import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
 import { Message, MessageDocument } from "./schemas/message.schema";
 
@@ -13,6 +14,7 @@ export class MessageGateWayService {
     constructor(@InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
                 @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) {}
 
+    //TODO: Возвращать id сообщения
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
@@ -36,5 +38,18 @@ export class MessageGateWayService {
         }
 
         message.delete();
+    }
+
+    async editMessage(editMessageDto: EditMessageDto) {
+        let room = await this.roomModel.findById(editMessageDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let message = await this.messageModel.findById(editMessageDto.messageId);
+        if (message === null) throw new NotFoundException('Сообщение не найдено');
+
+        if (editMessageDto.userId !== message.userId) throw new ForbiddenException('У вас нет прав на редактирование чужих сообщений');
+
+        message.text = editMessageDto.text;
+        message.save();
     }
 }
