@@ -9,6 +9,9 @@ export class Message{
     text: string;
 
     @Prop({ required: true })
+    type: string;
+
+    @Prop({ required: true })
     date: number;
 
     @Prop()

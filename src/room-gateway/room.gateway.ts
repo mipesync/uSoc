@@ -1,7 +1,6 @@
 import { Logger, OnModuleInit } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
-import { Server, Socket } from 'socket.io'
-import { TLSSocket } from "tls";
+import { Server, Socket } from 'socket.io';
 import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { DeleteUserDto } from "./dto/deleteUser.dto";
@@ -80,6 +79,7 @@ export class RoomGateway implements OnModuleInit {
     async onDeleteFromRoom(@MessageBody() deleteUserDto: DeleteUserDto, @ConnectedSocket() socket: Socket) {
         await this.gatewayService.deleteUser(deleteUserDto).catch((e) => {
             this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
                 message: e.message
             });
 

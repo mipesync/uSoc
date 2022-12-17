@@ -15,7 +15,7 @@ import { join } from 'path';
     imports: [
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'storage/'),
-            exclude: ['/api*']
+            exclude: ['/api*', '/join']
         }),
         AuthModule,
         ConfigModule.forRoot({

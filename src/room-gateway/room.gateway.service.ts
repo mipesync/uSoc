@@ -73,7 +73,7 @@ export class RoomGatewayService {
         if (!hasAccess) throw new ForbiddenException('У вас нет прав на удаление пользователя');
 
         let rankAllow: boolean = PermissionsManager.rankValidate(origin.role, target.role);
-        if (!rankAllow) throw new ForbiddenException('У вас нет прав на удаление пользователя, выше рангом');
+        if (!rankAllow) throw new ForbiddenException('У вас нет прав на удаление пользователя, выше или таким же рангом');
 
         
         let itemIndex = room.users.findIndex(user => user.userId === target.userId);
