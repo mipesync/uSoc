@@ -7,6 +7,7 @@ import { Room, RoomDocument } from "src/room/schemas/room.schema";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
 import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
+import { PinMessageDto } from "./dto/pinMessage.dto";
 import { Message, MessageDocument } from "./schemas/message.schema";
 
 @Injectable()
@@ -14,12 +15,12 @@ export class MessageGateWayService {
     constructor(@InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
                 @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) {}
 
-    //TODO: Возвращать id сообщения
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
-        await this.messageModel.create(newMessageDto);
+        let result = await this.messageModel.create(newMessageDto);
+        return result.id;
     }
 
     async deleteMessage(deleteMessageDto: DeleteMessageDto) {
@@ -51,5 +52,19 @@ export class MessageGateWayService {
 
         message.text = editMessageDto.text;
         message.save();
+    }
+
+    async pinMessage(pinMessageDto: PinMessageDto) {
+        let room = await this.roomModel.findById(pinMessageDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let message = await this.messageModel.findById(pinMessageDto.messageId);
+        if (message === null) throw new NotFoundException('Сообщение не найдено');
+
+        room.pinned.push({
+            userId: pinMessageDto.userId,
+            messageId: pinMessageDto.messageId
+        });
+        room.save();
     }
 }

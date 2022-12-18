@@ -1,9 +1,10 @@
-import { ForbiddenException, Logger, OnModuleInit } from "@nestjs/common";
+import { Logger, OnModuleInit } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Socket, Server } from "socket.io";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
 import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
+import { PinMessageDto } from "./dto/pinMessage.dto";
 import { MessageGateWayService } from "./message.gateway.service";
 
 @WebSocketGateway()
@@ -17,10 +18,16 @@ export class MessageGateway implements OnModuleInit {
     @SubscribeMessage('newMessage')
     async onSendMessage(@MessageBody() messageDto: NewMessageDto, @ConnectedSocket() socket: Socket) {
         if (!socket.rooms.has(messageDto.roomId)) {
-            throw new ForbiddenException('Пользователь не состоит в чате');
+            this.server.to(socket.id).emit('onException', {
+                statusCode: 403,
+                message: 'Пользователь не состоит в чате'
+            });
         }
-        this.server.to(messageDto.roomId).emit('onSendMessage', messageDto);
-        await this.messageService.newMessage(messageDto);
+        let messageId = await this.messageService.newMessage(messageDto);
+        this.server.to(messageDto.roomId).emit('onSendMessage', {
+            id: messageId,
+            message: messageDto
+        });
     }
 
     @SubscribeMessage('deleteMessage')
@@ -53,6 +60,23 @@ export class MessageGateway implements OnModuleInit {
         this.server.to(editMessageDto.roomId).emit('onEditMessage', {
             messageId: editMessageDto.messageId,
             text: editMessageDto.text
+        });
+    }
+
+    @SubscribeMessage('pinMessage')
+    async onPinMessage(@MessageBody() pinMessageDto: PinMessageDto, @ConnectedSocket() socket: Socket) {
+        await this.messageService.pinMessage(pinMessageDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
+                message: e.message
+            });
+
+            stop();
+        });
+
+        this.server.to(pinMessageDto.roomId).emit('onPinMessage', {
+            messageId: pinMessageDto.messageId,
+            userId: pinMessageDto.userId
         });
     }
 

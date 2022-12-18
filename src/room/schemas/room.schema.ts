@@ -13,11 +13,19 @@ export class Room{
 
     @Prop()
     avatarUrl?: string;
+
+    @Prop()
+    pinned: pinned[];
 }
 
 class user {
     userId: string;
     role: number;
+}
+
+class pinned {
+    userId: string;
+    messageId: string;
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);
