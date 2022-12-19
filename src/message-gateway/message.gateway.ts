@@ -80,6 +80,23 @@ export class MessageGateway implements OnModuleInit {
         });
     }
 
+    @SubscribeMessage('unpinMessage')
+    async onUnpinMessage(@MessageBody() pinMessageDto: PinMessageDto, @ConnectedSocket() socket: Socket) {
+        await this.messageService.unpinMessage(pinMessageDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
+                message: e.message
+            });
+
+            stop();
+        });
+
+        this.server.to(pinMessageDto.roomId).emit('onUnpinMessage', {
+            messageId: pinMessageDto.messageId,
+            userId: pinMessageDto.userId
+        });
+    }
+
     onModuleInit() {
         this.server.on('connection', socket => {
             this.logger.log(`Клиент ${socket.id} был подключен`);

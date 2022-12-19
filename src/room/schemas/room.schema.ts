@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
+import { MutedLookup } from "../lookup/muted.lookup";
+import { PinnedLookup } from "../lookup/pinned.lookup";
+import { UserLookup } from "../lookup/user.lookup";
 
 export type RoomDocument = Room & Document;
 
@@ -9,23 +12,16 @@ export class Room{
     name: string;
 
     @Prop({ required: true, unique: true })
-    users: user[];
+    users: UserLookup[];
 
     @Prop()
     avatarUrl?: string;
 
     @Prop()
-    pinned: pinned[];
-}
+    pinned: PinnedLookup[];
 
-class user {
-    userId: string;
-    role: number;
-}
-
-class pinned {
-    userId: string;
-    messageId: string;
+    @Prop()
+    muted: MutedLookup[];
 }
 
 export const RoomSchema = SchemaFactory.createForClass(Room);

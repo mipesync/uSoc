@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Permissions } from "src/permissions-manager/mask/permissions";
@@ -61,10 +61,25 @@ export class MessageGateWayService {
         let message = await this.messageModel.findById(pinMessageDto.messageId);
         if (message === null) throw new NotFoundException('Сообщение не найдено');
 
+        
+        let index = room.pinned.findIndex(pin => pin.messageId === pinMessageDto.messageId);
+        if (index !== 0) throw new BadRequestException('Сообщение уже закреплено');
+
         room.pinned.push({
-            userId: pinMessageDto.userId,
             messageId: pinMessageDto.messageId
         });
+        room.save();
+    }
+
+    async unpinMessage(pinMessageDto: PinMessageDto) {
+        let room = await this.roomModel.findById(pinMessageDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let message = await this.messageModel.findById(pinMessageDto.messageId);
+        if (message === null) throw new NotFoundException('Сообщение не найдено');
+
+        let index = room.pinned.findIndex(pin => pin.messageId === pinMessageDto.messageId);
+        room.pinned.splice(index, 1);
         room.save();
     }
 }

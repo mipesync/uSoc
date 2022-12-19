@@ -1,6 +1,7 @@
 import { Body, Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, ParseFilePipe, Post, Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
+import { MuteRoomDto } from './dto/muteRoom.dto';
 import { UpdatePermsDto } from './dto/updatePerms.dto';
 import { RoomService } from './room.service';
 
@@ -66,5 +67,21 @@ export class RoomController {
         result.avatarUrl = req.protocol.concat('://', req.headers['host'], result.avatarUrl);
 
         return result;
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Put('muteRoom')
+    async muteRoom(@Body() muteRoomDto: MuteRoomDto) {
+        await this.roomService.muteRoom(muteRoomDto).catch((err) => {
+            throw err;
+        });
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Put('unmuteRoom')
+    async unmuteRoom(@Body() muteRoomDto: MuteRoomDto) {
+        await this.roomService.unmuteRoom(muteRoomDto).catch((err) => {
+            throw err;
+        });
     }
 }

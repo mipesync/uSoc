@@ -9,6 +9,7 @@ import { UpdatePermsDto } from './dto/updatePerms.dto';
 import { PermissionsManager } from "src/permissions-manager/permissions.manager";
 import { Permissions } from "src/permissions-manager/mask/permissions";
 import { Message, MessageDocument } from 'src/message-gateway/schemas/message.schema';
+import { MuteRoomDto } from './dto/muteRoom.dto';
 
 const _fileRootPath: string = './storage/room/avatars/'
 
@@ -110,5 +111,28 @@ export class RoomService {
             avatarUrl: '/room/avatars/'.concat(room.avatarUrl),
             messages: messages
         }
+    }
+
+    async muteRoom(muteRoomDto: MuteRoomDto) {
+        let room = await this.roomModel.findById(muteRoomDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let user = room.users.find(user => user.userId === muteRoomDto.userId);
+        if (user === null) throw new NotFoundException('Пользователь не найден');
+
+        room.muted.push({ userId: muteRoomDto.userId });
+        room.save();
+    }
+
+    async unmuteRoom(muteRoomDto: MuteRoomDto) {
+        let room = await this.roomModel.findById(muteRoomDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let user = room.users.find(user => user.userId === muteRoomDto.userId);
+        if (user === null) throw new NotFoundException('Пользователь не найден');
+
+        let index = room.muted.findIndex(user => user.userId === muteRoomDto.userId);
+        room.muted.splice(index, 1);
+        room.save();
     }
 }
