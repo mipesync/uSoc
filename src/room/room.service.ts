@@ -11,6 +11,7 @@ import { Permissions } from "src/permissions-manager/mask/permissions";
 import { Message, MessageDocument } from 'src/message-gateway/schemas/message.schema';
 import { MuteRoomDto } from './dto/muteRoom.dto';
 import { UserRooms, UserRoomsDocument } from 'src/user/schemas/userRooms.schema';
+import { UserRoomsViewModel } from './viewModels/userRooms.viewModel';
 
 const _fileRootPath: string = './storage/room/avatars/'
 
@@ -113,6 +114,36 @@ export class RoomService {
             avatarUrl: '/room/avatars/'.concat(room.avatarUrl),
             messages: messages
         }
+    }
+    
+    async getUserRooms(userId: string): Promise<UserRoomsViewModel[]> {
+        let userRooms = await this.userRoomsModel.find({ userId: userId });
+
+        let rooms: any[] = [];
+
+        for(const userRoom of userRooms){
+            let room = await this.roomModel.findById(userRoom.roomId);
+            let message = await this.messageModel.findOne({ roomId: userRoom.roomId }).sort({ _id: -1 });
+
+            let lastMessage = null;
+            if (message) {
+                lastMessage = {
+                    text: message.text,
+                    userId: message.userId
+                }
+            }
+
+            let roomVM: UserRoomsViewModel = {
+                roomId: userRoom.roomId,
+                avatarUrl: room.avatarUrl,
+                name: room.name,
+                lastMessage: lastMessage
+            };
+
+            if(room) rooms.push(roomVM)
+        };
+
+        return rooms;
     }
 
     async muteRoom(muteRoomDto: MuteRoomDto) {

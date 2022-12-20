@@ -62,10 +62,9 @@ export class MessageGateWayService {
 
         let message = await this.messageModel.findById(pinMessageDto.messageId);
         if (message === null) throw new NotFoundException('Сообщение не найдено');
-
         
         let index = room.pinned.findIndex(pin => pin.messageId === pinMessageDto.messageId);
-        if (index !== 0) throw new BadRequestException('Сообщение уже закреплено');
+        if (index === 0) throw new BadRequestException('Сообщение уже закреплено');
 
         room.pinned.push({
             messageId: pinMessageDto.messageId

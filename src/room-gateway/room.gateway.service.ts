@@ -52,16 +52,16 @@ export class RoomGatewayService {
         await this.userRoomsModel.findOneAndRemove({ userId: leaveFromRoom.userId, roomId: leaveFromRoom.roomId });
     }
 
-    async getUserRooms(userId: string): Promise<RoomDocument[]> {
-        let roomsId = await this.userRoomsModel.find({ usersId: userId });
+    async getUserRooms(userId: string): Promise<string[]> {
+        let userRooms = await this.userRoomsModel.find({ userId: userId });
 
-        let rooms: RoomDocument[];
+        let rooms: string[] = [];
 
-        roomsId.forEach(async roomId => {
-            let room = await this.roomModel.findOne({ id: roomId });
-            if(room) rooms.push(room);            
-        });
-
+        for(const userRoom of userRooms){
+            let room = await this.roomModel.findById(userRoom.roomId);
+            if(room) rooms.push(room.id);            
+        };
+        
         return rooms;
     }
 

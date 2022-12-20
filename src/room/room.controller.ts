@@ -84,4 +84,14 @@ export class RoomController {
             throw err;
         });
     }
+
+    @HttpCode(HttpStatus.OK)
+    @Get('getUserRooms/:userId')
+    async getUserRooms(@Param('userId') userId: string) {
+        let rooms = await this.roomService.getUserRooms(userId).catch((err) => {
+            throw err;
+        });
+
+        return rooms;
+    }
 }
