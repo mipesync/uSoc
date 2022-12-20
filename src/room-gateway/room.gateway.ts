@@ -20,32 +20,48 @@ export class RoomGateway implements OnModuleInit {
 
     @SubscribeMessage('createRoom')
     async onCreateRoom(@MessageBody() roomDto: CreateRoomDto, @ConnectedSocket() socket: Socket) {
-        let room = await this.gatewayService.createRoom(roomDto);
+        let roomId = await this.gatewayService.createRoom(roomDto);
         
-        socket.join(room.id);
-        this.server.to(room.id).emit('onCreateRoom', {
-            message: `Чат "${roomDto.name}" был создан`
+        socket.join(roomId);
+        this.server.to(roomId).emit('onCreateRoom', {
+            roomId: roomId
         });
     }
 
     @SubscribeMessage('joinToRoom')
     async onJoinToRoom(@MessageBody() joinToRoomDto: JoinToRoomDto, @ConnectedSocket() socket: Socket) {
+        await this.gatewayService.joinToRoom(joinToRoomDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
+                message: e.message
+            });
+
+            stop();
+        });
+
         socket.join(joinToRoomDto.roomId);
 
         this.server.to(joinToRoomDto.roomId).emit('onJoinToRoom', {
             message: `${joinToRoomDto.userId} присоединился к чату`
         });
-        await this.gatewayService.joinToRoom(joinToRoomDto);
     }
 
     @SubscribeMessage('leaveFromRoom')
     async onLeaveFromRoom(@MessageBody() leaveFromRoomDto: LeaveFromRoomDto, @ConnectedSocket() socket: Socket) {
+        await this.gatewayService.leaveFromRoom(leaveFromRoomDto).catch((e) => {
+            this.server.to(socket.id).emit('onException', {
+                statusCode: e.status,
+                message: e.message
+            });
+
+            stop();
+        });
+
         socket.leave(leaveFromRoomDto.roomId);
 
         this.server.to(leaveFromRoomDto.roomId).emit('onLeaveFromRoom', {
             message: `${leaveFromRoomDto.userId} покинул чат`
         });
-        await this.gatewayService.leaveFromRoom(leaveFromRoomDto);
     }
 
     @SubscribeMessage('connectToRooms')

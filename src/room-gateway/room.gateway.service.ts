@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateRoomDto } from "./dto/createRoom.dto";
@@ -8,52 +8,66 @@ import { UpdateRoomNameDto } from "./dto/updateRoomName.dto";
 import { Room, RoomDocument } from "../room/schemas/room.schema";
 import { Roles } from "src/permissions-manager/mask/roles";
 import { DeleteUserDto } from "./dto/deleteUser.dto";
-import { User, UserDocument } from "src/auth/schemas/user.schema";
 import { PermissionsManager } from "src/permissions-manager/permissions.manager";
 import { Permissions } from "src/permissions-manager/mask/permissions";
+import { UserRooms, UserRoomsDocument } from "src/user/schemas/userRooms.schema";
 
 @Injectable()
 export class RoomGatewayService {
     constructor(
         @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
-        @InjectModel(User.name) private readonly userModel: Model<UserDocument>
+        @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>
     ) { }
 
-    async createRoom(createRoomDto: CreateRoomDto): Promise<RoomDocument> {
-        let room = await this.roomModel.create(createRoomDto);
-        room.users.push({ userId: createRoomDto.userId, role: Roles.CREATOR });
-        room.save();
-        return room;
+    async createRoom(createRoomDto: CreateRoomDto): Promise<string> {
+        let room = await this.roomModel.create({ name: createRoomDto.name });
+
+        await this.userRoomsModel.create({
+            roomId: room.id,
+            role: Roles.CREATOR,
+            userId: createRoomDto.userId
+        });
+        
+        return room.id;
     }
 
     async joinToRoom(joinToRoomDto: JoinToRoomDto) {
         let room = await this.roomModel.findById(joinToRoomDto.roomId);
-        if (room === null) throw new NotFoundException('Комнаты не существует');
+        if (!room) throw new NotFoundException('Комнаты не существует');
 
-        let user = room.users.find(user => user.userId === joinToRoomDto.userId);
-        if (user) return;
+        let userRoom = await this.userRoomsModel.findOne({ userId: joinToRoomDto.userId, roomId: joinToRoomDto.roomId });
+        if (userRoom) throw new BadRequestException('Пользователь уже состоит в чате');
 
-        room.users.push({ userId: joinToRoomDto.userId, role: Roles.MEMBER });
-        room.save();
+        await this.userRoomsModel.create({
+            roomId: joinToRoomDto.roomId,
+            role: Roles.MEMBER,
+            userId: joinToRoomDto.userId
+        });
     }
 
     async leaveFromRoom(leaveFromRoom: LeaveFromRoomDto) {
         let room = await this.roomModel.findById(leaveFromRoom.roomId);
-        if (room === null) throw new NotFoundException('Комнаты не существует');
+        if (!room) throw new NotFoundException('Комнаты не существует');
 
-        let itemIndex = room.users.findIndex(user => user.userId === leaveFromRoom.userId);
-        room.users.splice(itemIndex, 1);
-        room.save();
+        await this.userRoomsModel.findOneAndRemove({ userId: leaveFromRoom.userId, roomId: leaveFromRoom.roomId });
     }
 
     async getUserRooms(userId: string): Promise<RoomDocument[]> {
-        let rooms = await this.roomModel.find({ usersId: userId });
+        let roomsId = await this.userRoomsModel.find({ usersId: userId });
+
+        let rooms: RoomDocument[];
+
+        roomsId.forEach(async roomId => {
+            let room = await this.roomModel.findOne({ id: roomId });
+            if(room) rooms.push(room);            
+        });
+
         return rooms;
     }
 
     async updateRoomName(updateRoomNameDto: UpdateRoomNameDto) {
         let room = await this.roomModel.findById(updateRoomNameDto.roomId);
-        if (room === null) throw new NotFoundException('Комнаты не существует');
+        if (!room) throw new NotFoundException('Комнаты не существует');
 
         room.name = updateRoomNameDto.name;
         room.save();
@@ -61,13 +75,13 @@ export class RoomGatewayService {
 
     async deleteUser(deleteUserDto: DeleteUserDto) {
         let room = await this.roomModel.findById(deleteUserDto.roomId);
-        if (room === null) throw new NotFoundException('Комнаты не существует');
+        if (!room) throw new NotFoundException('Комнаты не существует');
 
-        let origin = room.users.find(user => user.userId === deleteUserDto.origin);
-        if (origin === null) throw new NotFoundException('Инициатор не найден');
+        let origin = await this.userRoomsModel.findOne({userId: deleteUserDto.origin, roomId: deleteUserDto.roomId});
+        if (!origin) throw new NotFoundException('Инициатор не состоит в чате');
 
-        let target = room.users.find(user => user.userId === deleteUserDto.target);
-        if (target === null) throw new NotFoundException('Пользователь не найден');
+        let target = await this.userRoomsModel.findOne({userId: deleteUserDto.target, roomId: deleteUserDto.roomId});
+        if (!target) throw new NotFoundException('Пользователь не состоит в чате');
 
         let hasAccess: boolean = PermissionsManager.permissValidate(origin.role, Permissions.ACCESS_DELETE_USERS);
         if (!hasAccess) throw new ForbiddenException('У вас нет прав на удаление пользователя');
@@ -76,8 +90,6 @@ export class RoomGatewayService {
         if (!rankAllow) throw new ForbiddenException('У вас нет прав на удаление пользователя, выше или таким же рангом');
 
         
-        let itemIndex = room.users.findIndex(user => user.userId === target.userId);
-        room.users.splice(itemIndex, 1);
-        room.save();
+        await this.userRoomsModel.findOneAndRemove({ userId: deleteUserDto.target, roomId: deleteUserDto.roomId });
     }
 }

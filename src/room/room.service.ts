@@ -10,13 +10,15 @@ import { PermissionsManager } from "src/permissions-manager/permissions.manager"
 import { Permissions } from "src/permissions-manager/mask/permissions";
 import { Message, MessageDocument } from 'src/message-gateway/schemas/message.schema';
 import { MuteRoomDto } from './dto/muteRoom.dto';
+import { UserRooms, UserRoomsDocument } from 'src/user/schemas/userRooms.schema';
 
 const _fileRootPath: string = './storage/room/avatars/'
 
 @Injectable()
 export class RoomService {
     constructor(@InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
-                @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>) { }
+        @InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
+        @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>) { }
 
     async updateRoomAvatar(file: Express.Multer.File, roomId: string): Promise<string> {
         let room = await this.roomModel.findById(roomId);
@@ -46,29 +48,28 @@ export class RoomService {
         let room = await this.roomModel.findById(updatePermsDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
-        let origin = room.users.find(user => user.userId === updatePermsDto.origin);
-        if (origin === null) throw new NotFoundException('Инициатор не найден');
+        let origin = await this.userRoomsModel.findOne({ userId: updatePermsDto.origin, roomId: updatePermsDto.roomId });
+        if (origin === null) throw new NotFoundException('Инициатор не состоит в чате');
 
-        let target = room.users.find(user => user.userId === updatePermsDto.target);
-        if (target === null) throw new NotFoundException('Пользователь не найден');
+        let target = await this.userRoomsModel.findOne({ userId: updatePermsDto.target, roomId: updatePermsDto.roomId });
+        if (target === null) throw new NotFoundException('Пользователь не состоит в чате');
 
         let hasAccess: boolean = PermissionsManager.permissValidate(origin.role, Permissions.ACCESS_GIVE_ACCESS);
         if (!hasAccess) throw new ForbiddenException('У вас нет прав на изменение ролей пользователя');
 
         target.role = updatePermsDto.newRole;
-        room.users[room.users.findIndex(user => user.userId === updatePermsDto.target)] = target;
-        room.save();
+        target.save();
     }
 
     async takePerms(updatePermsDto: UpdatePermsDto) {
         let room = await this.roomModel.findById(updatePermsDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
+        
+        let origin = await this.userRoomsModel.findOne({ userId: updatePermsDto.origin, roomId: updatePermsDto.roomId });
+        if (origin === null) throw new NotFoundException('Инициатор не состоит в чате');
 
-        let origin = room.users.find(user => user.userId === updatePermsDto.origin);
-        if (origin === null) throw new NotFoundException('Инициатор не найден');
-
-        let target = room.users.find(user => user.userId === updatePermsDto.target);
-        if (target === null) throw new NotFoundException('Пользователь не найден');
+        let target = await this.userRoomsModel.findOne({ userId: updatePermsDto.target, roomId: updatePermsDto.roomId });
+        if (target === null) throw new NotFoundException('Пользователь не состоит в чате');
 
         let hasAccess: boolean = PermissionsManager.permissValidate(origin.role, Permissions.ACCESS_GIVE_ACCESS);
         if (!hasAccess) throw new ForbiddenException('У вас нет прав на изменение роли пользователя');
@@ -77,8 +78,7 @@ export class RoomService {
         if (!rankAllow) throw new ForbiddenException('У вас нет прав на изменение роли пользователя, выше или таким же рангом');
 
         target.role = updatePermsDto.newRole;
-        room.users[room.users.findIndex(user => user.userId === updatePermsDto.target)] = target;
-        room.save();
+        target.save();
     }
 
     //TODO: Надо будет сделать маппинг ссылок вложений
@@ -88,13 +88,15 @@ export class RoomService {
 
         let messages = await this.messageModel.find( { roomId: roomId, type: ['video', 'image', 'document', 'audio'] } );
 
+        let members = await this.userRoomsModel.find({ roomId: roomId });
+
         return {
             id: room.id,
             title: room.name,
             avatarUrl: '/room/avatars/'.concat(room.avatarUrl),
             attachments: messages,
-            members: room.users,
-            membersCount: room.users.length,
+            members: members,
+            membersCount: members.length,
         }
     }
 
@@ -117,22 +119,21 @@ export class RoomService {
         let room = await this.roomModel.findById(muteRoomDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
-        let user = room.users.find(user => user.userId === muteRoomDto.userId);
-        if (user === null) throw new NotFoundException('Пользователь не найден');
+        let userRoom = await this.userRoomsModel.findOne({ userId: muteRoomDto.userId, roomId: muteRoomDto.roomId });
+        if (userRoom === null) throw new NotFoundException('Пользователь не состоит в чате');
 
-        room.muted.push({ userId: muteRoomDto.userId });
-        room.save();
+        userRoom.isMuted = true;
+        userRoom.save();
     }
 
     async unmuteRoom(muteRoomDto: MuteRoomDto) {
         let room = await this.roomModel.findById(muteRoomDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
-        let user = room.users.find(user => user.userId === muteRoomDto.userId);
-        if (user === null) throw new NotFoundException('Пользователь не найден');
-
-        let index = room.muted.findIndex(user => user.userId === muteRoomDto.userId);
-        room.muted.splice(index, 1);
-        room.save();
+        let userRoom = await this.userRoomsModel.findOne({ userId: muteRoomDto.userId, roomId: muteRoomDto.roomId });
+        if (userRoom === null) throw new NotFoundException('Пользователь не состоит в чате');
+        
+        userRoom.isMuted = false;
+        userRoom.save();
     }
 }

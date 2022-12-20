@@ -4,6 +4,7 @@ import { Model } from "mongoose";
 import { Permissions } from "src/permissions-manager/mask/permissions";
 import { PermissionsManager } from "src/permissions-manager/permissions.manager";
 import { Room, RoomDocument } from "src/room/schemas/room.schema";
+import { UserRooms, UserRoomsDocument } from "src/user/schemas/userRooms.schema";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
 import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
@@ -13,7 +14,8 @@ import { Message, MessageDocument } from "./schemas/message.schema";
 @Injectable()
 export class MessageGateWayService {
     constructor(@InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
-                @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>) {}
+        @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
+        @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>) {}
 
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
@@ -31,7 +33,7 @@ export class MessageGateWayService {
         if (message === null) throw new NotFoundException('Сообщение не найдено');
 
         if (deleteMessageDto.userId !== message.userId) {
-            let user = room.users.find(user => user.userId === deleteMessageDto.userId);
+            let user = await this.userRoomsModel.findOne(user => user.userId === deleteMessageDto.userId);
             if (user === null) throw new NotFoundException('Пользователь не найден');
 
             let hasAccess: boolean = PermissionsManager.permissValidate(user.role, Permissions.ACCESS_DELETE_MESSAGES);
