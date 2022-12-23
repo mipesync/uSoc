@@ -10,6 +10,7 @@ import { MessageGatewayModule } from './message-gateway/message.gateway.module';
 import { RoomModule } from './room/room.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { MessageModule } from './message/message.module';
 
 @Module({
     imports: [
@@ -25,7 +26,8 @@ import { join } from 'path';
         UserModule,
         RoomGatewayModule,
         MessageGatewayModule,
-        RoomModule
+        RoomModule,
+        MessageModule
     ],
     controllers: [AppController],
     providers: [AppService],

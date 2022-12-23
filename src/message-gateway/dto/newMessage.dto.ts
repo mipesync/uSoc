@@ -7,6 +7,7 @@ export class NewMessageDto {
     @IsNotEmpty()
     @IsDate()
     date: string;
+    
     to?: string;
 
     @IsNotEmpty()
