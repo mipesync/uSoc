@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Message, MessageSchema } from 'src/message-gateway/schemas/message.schema';
+import { Message, MessageSchema } from 'src/gateways/message-gateway/schemas/message.schema';
 import { Room, RoomSchema } from 'src/room/schemas/room.schema';
 import { MessageController } from './message.controller';
 import { MessageService } from './message.service';

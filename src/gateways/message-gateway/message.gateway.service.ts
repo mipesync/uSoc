@@ -1,8 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Permissions } from "src/permissions-manager/mask/permissions";
-import { PermissionsManager } from "src/permissions-manager/permissions.manager";
+import { Permissions } from "src/common/permissions-manager/mask/permissions";
+import { PermissionsManager } from "src/common/permissions-manager/permissions.manager";
 import { Room, RoomDocument } from "src/room/schemas/room.schema";
 import { UserRooms, UserRoomsDocument } from "src/user/schemas/userRooms.schema";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";

@@ -5,12 +5,12 @@ import { CreateRoomDto } from "./dto/createRoom.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
 import { UpdateRoomNameDto } from "./dto/updateRoomName.dto";
-import { Room, RoomDocument } from "../room/schemas/room.schema";
-import { Roles } from "src/permissions-manager/mask/roles";
 import { DeleteUserDto } from "./dto/deleteUser.dto";
-import { PermissionsManager } from "src/permissions-manager/permissions.manager";
-import { Permissions } from "src/permissions-manager/mask/permissions";
 import { UserRooms, UserRoomsDocument } from "src/user/schemas/userRooms.schema";
+import { Room, RoomDocument } from "src/room/schemas/room.schema";
+import { Roles } from "src/common/permissions-manager/mask/roles";
+import { PermissionsManager } from "src/common/permissions-manager/permissions.manager";
+import { Permissions } from "src/common/permissions-manager/mask/permissions";
 
 @Injectable()
 export class RoomGatewayService {
