@@ -3,6 +3,7 @@ import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSo
 import { Server, Socket } from 'socket.io';
 import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
+import { DeleteAvatarDto } from "./dto/deleteAvatar.dto";
 import { DeleteUserDto } from "./dto/deleteUser.dto";
 import { JoinToRoomDto } from "./dto/joinToRoom.dto";
 import { LeaveFromRoomDto } from "./dto/leaveFromRoom.dto";
@@ -88,6 +89,15 @@ export class RoomGateway implements OnModuleInit {
         this.server.to(updateRoomAvatar.roomId).emit('onUpdateRoomAvatar', {
             message: `Аватар чата был изменён ${updateRoomAvatar.username}`,
             avatarUrl: updateRoomAvatar.avatarUrl
+        });
+    }
+
+    @SubscribeMessage('deleteAvatar')
+    async onDeleteAvatar(@MessageBody() deleteAvatarDto: DeleteAvatarDto) {
+        await this.gatewayService.deleteAvatar(deleteAvatarDto);
+
+        this.server.to(deleteAvatarDto.roomId).emit('onDeleteAvatar', {
+            message: `Аватар чата был удалён ${deleteAvatarDto.username}`
         });
     }
 

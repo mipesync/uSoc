@@ -11,6 +11,8 @@ import { Room, RoomDocument } from "src/room/schemas/room.schema";
 import { Roles } from "src/common/permissions-manager/mask/roles";
 import { PermissionsManager } from "src/common/permissions-manager/permissions.manager";
 import { Permissions } from "src/common/permissions-manager/mask/permissions";
+import { DeleteAvatarDto } from "./dto/deleteAvatar.dto";
+import { unlink } from "fs";
 
 @Injectable()
 export class RoomGatewayService {
@@ -91,5 +93,20 @@ export class RoomGatewayService {
 
         
         await this.userRoomsModel.findOneAndRemove({ userId: deleteUserDto.target, roomId: deleteUserDto.roomId });
+    }
+
+    async deleteAvatar(deleteAvatarDto: DeleteAvatarDto) {        
+        let room = await this.roomModel.findById(deleteAvatarDto.roomId);
+        if (!room) throw new NotFoundException('Комнаты не существует');
+
+        const _fileRootPath = `./storage/room/avatar/`;
+        unlink(_fileRootPath + room.avatarUrl, (err) => {
+            if (err){
+                console.log(err);
+            }
+        });
+
+        room.avatarUrl = null;
+        room.save();
     }
 }
