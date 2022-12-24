@@ -4,7 +4,7 @@ import { User, UserSchema } from "src/user/schemas/user.schema";
 import { Room, RoomSchema } from "src/room/schemas/room.schema";
 import { MessageGateway } from "./message.gateway";
 import { MessageGateWayService } from "./message.gateway.service";
-import { Message, MessageSchema } from "./schemas/message.schema";
+import { Message, MessageSchema } from "../../message/schemas/message.schema";
 import { UserRooms, UserRoomsSchema } from "src/user/schemas/userRooms.schema";
 
 @Module({

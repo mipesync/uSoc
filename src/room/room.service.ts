@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import { UpdatePermsDto } from './dto/updatePerms.dto';
 import { PermissionsManager } from "src/common/permissions-manager/permissions.manager";
 import { Permissions } from "src/common/permissions-manager/mask/permissions";
-import { Message, MessageDocument } from 'src/gateways/message-gateway/schemas/message.schema';
+import { Message, MessageDocument } from 'src/message/schemas/message.schema';
 import { MuteRoomDto } from './dto/muteRoom.dto';
 import { UserRooms, UserRoomsDocument } from 'src/user/schemas/userRooms.schema';
 import { UserRoomsViewModel } from './viewModels/userRooms.viewModel';
@@ -82,7 +82,6 @@ export class RoomService {
         target.save();
     }
 
-    //TODO: Надо будет сделать маппинг ссылок вложений
     async getRoomDetails(roomId: string) {
         let room = await this.roomModel.findById(roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
@@ -101,7 +100,6 @@ export class RoomService {
         }
     }
 
-    //TODO: Надо будет сделать маппинг ссылок вложений
     async getRoomChat(roomId: string) {
         let room = await this.roomModel.findById(roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');

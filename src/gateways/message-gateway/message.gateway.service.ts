@@ -9,7 +9,8 @@ import { DeleteMessageDto } from "./dto/deleteMessage.dto";
 import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
 import { PinMessageDto } from "./dto/pinMessage.dto";
-import { Message, MessageDocument } from "./schemas/message.schema";
+import { Message, MessageDocument } from "../../message/schemas/message.schema";
+import { unlink } from "fs";
 
 @Injectable()
 export class MessageGateWayService {
@@ -17,9 +18,14 @@ export class MessageGateWayService {
         @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
         @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>) {}
 
+    //TODO: добавить проверку на тип (если не текст, то проверяем имя файла)
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        if (newMessageDto.type !== 'text') {
+            if (!newMessageDto.fileName) throw new BadRequestException('Поле "fileName" обязательно')
+        }
 
         let result = await this.messageModel.create(newMessageDto);
         return result.id;
@@ -38,6 +44,16 @@ export class MessageGateWayService {
 
             let hasAccess: boolean = PermissionsManager.permissValidate(user.role, Permissions.ACCESS_DELETE_MESSAGES);
             if (!hasAccess) throw new ForbiddenException('У вас нет прав на удаление чужих сообщений');
+        }
+
+        if (message.type !== 'text') {            
+            const _fileRootPath: string = `./storage/room/attachments/${deleteMessageDto.roomId}/`;
+
+            unlink(_fileRootPath + message.fileName, (err) => {
+                if (err) {
+                    console.log(err);
+                }
+            });
         }
 
         message.delete();

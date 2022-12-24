@@ -5,11 +5,14 @@ export type MessageDocument = Message & Document;
 
 @Schema()
 export class Message{
-    @Prop({ required: true })
-    text: string;
+    @Prop()
+    text?: string;
 
     @Prop({ required: true })
     type: string;
+
+    @Prop()
+    fileName?: string;
 
     @Prop({ required: true })
     date: number;

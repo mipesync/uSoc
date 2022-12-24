@@ -67,7 +67,6 @@ export class RoomGateway implements OnModuleInit {
     @SubscribeMessage('connectToRooms')
     async onConnectToRooms(@MessageBody() connectToRoomsDto: ConnectToRoomsDto, @ConnectedSocket() socket: Socket) {
         let roomsId = await this.gatewayService.getUserRooms(connectToRoomsDto.userId);
-        console.log(roomsId);
         roomsId.forEach(roomId => {
             socket.join(roomId);
         });

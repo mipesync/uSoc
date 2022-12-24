@@ -14,5 +14,11 @@ export class NewMessageDto {
     userId: string;
 
     @IsNotEmpty()
+    type: string;
+
+    fileName: string;
+    fileUrl: string;
+
+    @IsNotEmpty()
     roomId: string;
 }
