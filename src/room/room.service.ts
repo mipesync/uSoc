@@ -12,6 +12,7 @@ import { Message, MessageDocument } from 'src/message/schemas/message.schema';
 import { MuteRoomDto } from './dto/muteRoom.dto';
 import { UserRooms, UserRoomsDocument } from 'src/user/schemas/userRooms.schema';
 import { UserRoomsViewModel } from './viewModels/userRooms.viewModel';
+import { PinRoomDto } from './dto/pimRoom.dto';
 
 const _fileRootPath: string = './storage/room/avatars/'
 
@@ -163,6 +164,28 @@ export class RoomService {
         if (userRoom === null) throw new NotFoundException('Пользователь не состоит в чате');
         
         userRoom.isMuted = false;
+        userRoom.save();
+    }
+
+    async pinRoom(pinRoomDto: PinRoomDto) {
+        let room = await this.roomModel.findById(pinRoomDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');        
+
+        let userRoom = await this.userRoomsModel.findOne({ userId: pinRoomDto.userId, roomId: pinRoomDto.roomId });
+        if (userRoom === null) throw new NotFoundException('Пользователь не состоит в чате');
+
+        userRoom.isPinned = true;
+        userRoom.save();
+    }
+
+    async unpinRoom(pinRoomDto: PinRoomDto) {
+        let room = await this.roomModel.findById(pinRoomDto.roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');        
+
+        let userRoom = await this.userRoomsModel.findOne({ userId: pinRoomDto.userId, roomId: pinRoomDto.roomId });
+        if (userRoom === null) throw new NotFoundException('Пользователь не состоит в чате');
+
+        userRoom.isPinned = false;
         userRoom.save();
     }
 }

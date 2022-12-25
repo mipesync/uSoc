@@ -2,6 +2,7 @@ import { Body, Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { MuteRoomDto } from './dto/muteRoom.dto';
+import { PinRoomDto } from './dto/pimRoom.dto';
 import { UpdatePermsDto } from './dto/updatePerms.dto';
 import { RoomService } from './room.service';
 
@@ -93,5 +94,21 @@ export class RoomController {
         });
 
         return rooms;
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Put('pinRoom')
+    async pinRoom(@Body() pinRoomDto: PinRoomDto) {
+        await this.roomService.pinRoom(pinRoomDto).catch((err) => {
+            throw err;
+        });
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Put('unpinRoom')
+    async unpinRoom(@Body() pinRoomDto: PinRoomDto) {
+        await this.roomService.unpinRoom(pinRoomDto).catch((err) => {
+            throw err;
+        });
     }
 }
