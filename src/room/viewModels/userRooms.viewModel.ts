@@ -5,5 +5,7 @@ export class UserRoomsViewModel {
     lastMessage?: {
         userId?: string,
         text?: string
-    }
+    };
+    isPinned?: boolean;
+    isMuted?: boolean;
 }

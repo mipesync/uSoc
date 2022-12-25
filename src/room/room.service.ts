@@ -1,6 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { unlink, writeFile } from 'fs';
+import { existsSync, mkdir, unlink, writeFile } from 'fs';
 import { Model } from 'mongoose';
 import { extname, join } from 'path';
 import { Room, RoomDocument } from 'src/room/schemas/room.schema';
@@ -15,6 +15,7 @@ import { UserRoomsViewModel } from './viewModels/userRooms.viewModel';
 import { PinRoomDto } from './dto/pimRoom.dto';
 
 const _fileRootPath: string = './storage/room/avatars/'
+const _filePath: string = '/room/avatars/';
 
 @Injectable()
 export class RoomService {
@@ -27,6 +28,10 @@ export class RoomService {
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
         let _fileName: string = `${uuid()}${extname(file.originalname)}`
+        
+        if (!existsSync(_fileRootPath)){
+            await mkdir(_fileRootPath, {recursive: true}, (err) => { console.log(err)});
+        }
 
         writeFile(join(_fileRootPath, _fileName), file.buffer, (err) => {
             if (err) {
@@ -43,7 +48,7 @@ export class RoomService {
         room.avatarUrl = _fileName;
         room.save();
 
-        return '/room/avatars/'.concat(_fileName);
+        return _filePath.concat(_fileName);
     }
 
     async givePerms(updatePermsDto: UpdatePermsDto) {
@@ -94,7 +99,7 @@ export class RoomService {
         return {
             id: room.id,
             title: room.name,
-            avatarUrl: '/room/avatars/'.concat(room.avatarUrl),
+            avatarUrl: room.avatarUrl === undefined ? null : _filePath.concat(room.avatarUrl),
             attachments: messages,
             members: members,
             membersCount: members.length,
@@ -110,12 +115,12 @@ export class RoomService {
         return {
             id: room.id,
             title: room.name,
-            avatarUrl: '/room/avatars/'.concat(room.avatarUrl),
+            avatarUrl: room.avatarUrl === undefined ? null : _filePath.concat(room.avatarUrl),
             messages: messages
         }
     }
     
-    async getUserRooms(userId: string): Promise<UserRoomsViewModel[]> {
+    async getUserRooms(userId: string, host: string): Promise<UserRoomsViewModel[]> {
         let userRooms = await this.userRoomsModel.find({ userId: userId });
 
         let rooms: any[] = [];
@@ -134,9 +139,11 @@ export class RoomService {
 
             let roomVM: UserRoomsViewModel = {
                 roomId: userRoom.roomId,
-                avatarUrl: room.avatarUrl,
+                avatarUrl: room.avatarUrl === undefined ? null : host.concat(_filePath, room.avatarUrl),
                 name: room.name,
-                lastMessage: lastMessage
+                lastMessage: lastMessage,
+                isMuted: userRoom.isMuted,
+                isPinned: userRoom.isPinned
             };
 
             if(room) rooms.push(roomVM)

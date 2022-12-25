@@ -88,8 +88,9 @@ export class RoomController {
 
     @HttpCode(HttpStatus.OK)
     @Get('getUserRooms/:userId')
-    async getUserRooms(@Param('userId') userId: string) {
-        let rooms = await this.roomService.getUserRooms(userId).catch((err) => {
+    async getUserRooms(@Param('userId') userId: string, @Req() req: Request) {
+        const host = req.protocol.concat('://', req.headers['host']);
+        let rooms = await this.roomService.getUserRooms(userId, host).catch((err) => {
             throw err;
         });
 
