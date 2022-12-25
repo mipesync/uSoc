@@ -106,7 +106,7 @@ export class RoomGatewayService {
             }
         });
 
-        room.avatarUrl = null;
+        room.avatarUrl = undefined;
         room.save();
     }
 }
