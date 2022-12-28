@@ -9,4 +9,7 @@ export class SignInDto {
 
     @IsBoolean()
     rememberMe: boolean;
+
+    @IsNotEmpty()
+    authStrategy: string;
 }

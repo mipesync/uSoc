@@ -1,4 +1,5 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, UseGuards, } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { SignInDto } from './dto/signIn.dto';
@@ -45,5 +46,15 @@ export class AuthController {
                 refresh_token: result.refresh_token,
                 refresh_token_expires: result.refresh_token_expires
             };
+    }
+
+    @UseGuards(AuthGuard("google"))
+    @Get("google")
+    async signInWithGoogle() {}
+  
+    @UseGuards(AuthGuard("google"))
+    @Get("google/redirect")
+    async signInWithGoogleRedirect(@Req() req) {
+      return this.authService.signInWithGoogle(req);
     }
 }

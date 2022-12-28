@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../user/schemas/user.schema';
@@ -9,7 +9,7 @@ import { JwtManager } from './jwt/jwt.manager';
 
 @Injectable()
 export class AuthService {
-    constructor( @InjectModel(User.name) private readonly userModel: Model<UserDocument> ) { }
+    constructor( @InjectModel(User.name) private readonly userModel: Model<UserDocument>) { }
 
     async createUser(createUserDto: CreateUserDto): Promise<string> {
         let entity = await this.userModel.findOne({ username: createUserDto.username } || { email: createUserDto.email });
@@ -25,7 +25,7 @@ export class AuthService {
         let user = await this.userModel.findOne({ username: loginDto.username });
 
         if (user === null) throw new NotFoundException('Пользователь не найден');
-        if (!await this.passwordValidate(loginDto.password, user.password)) throw new BadRequestException('Неверный пароль');
+        if (loginDto.authStrategy === "jwt" && !await this.passwordValidate(loginDto.password, user.password)) throw new BadRequestException('Неверный пароль');
         
         let tokenResult = new JwtManager().generateAccessToken(user);
 
@@ -67,6 +67,31 @@ export class AuthService {
             refresh_token_expires: refreshTokenResult.expires
         }
     }
+
+    async signInWithGoogle(data) {
+        if (!data.user) throw new BadRequestException();
+    
+        let user = await this.userModel.findOne({ where: [{ googleId: data.user.id }] });
+        if (user) return this.signin({ username: user.username, password: "", rememberMe: false, authStrategy: "google" });
+    
+        user = await this.userModel.findOne({ where: [{ email: data.user.email }] });
+        if (user)
+            throw new ForbiddenException("User already exists, but Google account was not connected to user's account");
+    
+        try {
+            let newUser: User = {
+                username: data.user.email,
+                email: data.user.email,
+                googleId: data.user.googleId,
+                password: null
+            };
+
+            await this.userModel.create(newUser);
+            return this.signin({ username: newUser.username, password: "", rememberMe: false, authStrategy: "google" });
+        } catch (e) {
+            throw new Error(e);
+        }
+      }
 
     private async passwordValidate(password: string, hash: string): Promise<boolean> {
         return await bcrypt.compare(password, hash);
