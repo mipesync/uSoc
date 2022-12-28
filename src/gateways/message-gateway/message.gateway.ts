@@ -1,13 +1,15 @@
-import { Logger, OnModuleInit, Req } from "@nestjs/common";
+import { Logger, OnModuleInit, Req, UseGuards } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Request } from "express";
 import { Socket, Server } from "socket.io";
+import { WsGuard } from "src/auth/jwt/ws.guard";
 import { DeleteMessageDto } from "./dto/deleteMessage.dto";
 import { EditMessageDto } from "./dto/editMessage.dto";
 import { NewMessageDto } from "./dto/newMessage.dto";
 import { PinMessageDto } from "./dto/pinMessage.dto";
 import { MessageGateWayService } from "./message.gateway.service";
 
+@UseGuards(WsGuard)
 @WebSocketGateway()
 export class MessageGateway implements OnModuleInit {
     constructor(private readonly messageService: MessageGateWayService) {}

@@ -5,7 +5,7 @@ import { User, UserDocument } from '../user/schemas/user.schema';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from './dto/createUser.dto';
 import { SignInDto } from './dto/signIn.dto';
-import { JwtManager } from './jwt.manager';
+import { JwtManager } from './jwt/jwt.manager';
 
 @Injectable()
 export class AuthService {

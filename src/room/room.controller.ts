@@ -1,11 +1,13 @@
-import { Body, Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, ParseFilePipe, Post, Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, ParseFilePipe, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { MuteRoomDto } from './dto/muteRoom.dto';
 import { PinRoomDto } from './dto/pimRoom.dto';
 import { UpdatePermsDto } from './dto/updatePerms.dto';
 import { RoomService } from './room.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('room')
 export class RoomController {
     constructor(private readonly roomService: RoomService) {}

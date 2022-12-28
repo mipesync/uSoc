@@ -3,7 +3,7 @@ import { JwtService } from "@nestjs/jwt"
 export class JwtManager {
 	createJwtService(expires: string): JwtService {
 		return new JwtService({
-			secret: '375ff8a55aca72cf3a11e318d1592d2f0d3995ae',
+			secret: process.env.JWT_SECRET,
 			signOptions: { expiresIn: expires },
 		});
 	}

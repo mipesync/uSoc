@@ -1,6 +1,7 @@
-import { Logger, OnModuleInit } from "@nestjs/common";
+import { Logger, OnModuleInit, UseGuards } from "@nestjs/common";
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
+import { WsGuard } from "src/auth/jwt/ws.guard";
 import { ConnectToRoomsDto } from "./dto/connectToRooms.dto";
 import { CreateRoomDto } from "./dto/createRoom.dto";
 import { DeleteAvatarDto } from "./dto/deleteAvatar.dto";
@@ -11,6 +12,7 @@ import { UpdateRoomAvatarDto } from "./dto/updateRoomAvatar.dto";
 import { UpdateRoomNameDto } from "./dto/updateRoomName.dto";
 import { RoomGatewayService } from "./room.gateway.service";
 
+@UseGuards(WsGuard)
 @WebSocketGateway()
 export class RoomGateway implements OnModuleInit {
     constructor(private readonly gatewayService: RoomGatewayService) {}

@@ -1,10 +1,12 @@
 import { Controller, FileTypeValidator, HttpStatus, ParseFilePipe } from '@nestjs/common';
-import { Body, Delete, Get, HttpCode, Param, Put, Req, UploadedFile, UseInterceptors } from '@nestjs/common/decorators';
+import { Body, Delete, Get, HttpCode, Param, Put, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common/decorators';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
 import { UpdateUsernameDto } from './dto/updateUsername.dto';
 import { UserService } from './user.service';
 
+@UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {
     constructor(private readonly userService: UserService) {}

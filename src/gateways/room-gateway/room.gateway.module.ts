@@ -5,6 +5,7 @@ import { RoomGatewayService } from "./room.gateway.service";
 import { User, UserSchema } from "src/user/schemas/user.schema";
 import { UserRooms, UserRoomsSchema } from "src/user/schemas/userRooms.schema";
 import { Room, RoomSchema } from "src/room/schemas/room.schema";
+import { UserService } from "src/user/user.service";
 
 @Module({    
     imports: [
@@ -14,6 +15,6 @@ import { Room, RoomSchema } from "src/room/schemas/room.schema";
             { name: UserRooms.name, schema: UserRoomsSchema}
         ])
     ],
-    providers: [ RoomGatewayService, RoomGateway ],
+    providers: [ RoomGatewayService, RoomGateway, UserService ],
 })
 export class RoomGatewayModule {}
