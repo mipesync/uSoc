@@ -3,6 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { SignInDto } from './dto/signIn.dto';
+import { GoogleAuthGuard } from './oauth20/google.oauth20/google-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -48,13 +49,15 @@ export class AuthController {
             };
     }
 
-    @UseGuards(AuthGuard("google"))
-    @Get("google")
+    @UseGuards(GoogleAuthGuard)
+    @Get("google/login")
     async signInWithGoogle() {}
   
-    @UseGuards(AuthGuard("google"))
+    @UseGuards(GoogleAuthGuard)
     @Get("google/redirect")
     async signInWithGoogleRedirect(@Req() req) {
-      return this.authService.signInWithGoogle(req);
+        return this.authService.signInWithGoogle(req).catch((e) => {
+            throw e;
+        });
     }
 }

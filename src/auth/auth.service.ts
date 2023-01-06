@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../user/schemas/user.schema';
@@ -14,7 +14,7 @@ export class AuthService {
     async createUser(createUserDto: CreateUserDto): Promise<string> {
         let entity = await this.userModel.findOne({ username: createUserDto.username } || { email: createUserDto.email });
 
-        if (entity !== null) throw new ConflictException('Пользователь уже существует');
+        if (entity !== null) throw new BadRequestException('Пользователь уже существует');
 
         createUserDto.password = await this.passwordHash(createUserDto.password);
         let user = await this.userModel.create(createUserDto);
@@ -70,20 +70,22 @@ export class AuthService {
 
     async signInWithGoogle(data) {
         if (!data.user) throw new BadRequestException();
-    
-        let user = await this.userModel.findOne({ where: [{ googleId: data.user.id }] });
+
+        let user = await this.userModel.findOne({ googleId: data.user.id });        
         if (user) return this.signin({ username: user.username, password: "", rememberMe: false, authStrategy: "google" });
     
-        user = await this.userModel.findOne({ where: [{ email: data.user.email }] });
-        if (user)
-            throw new ForbiddenException("User already exists, but Google account was not connected to user's account");
+        user = await this.userModel.findOne({ email: data.user.email });
+        if (user) {
+            throw new ForbiddenException("Пользователь уже существует, но аккаунт Google не привязан");
+        }
     
         try {
             let newUser: User = {
                 username: data.user.email,
                 email: data.user.email,
-                googleId: data.user.googleId,
-                password: null
+                googleId: data.user.id,
+                password: "google-auth",
+                avatarUrl: data.user.photo
             };
 
             await this.userModel.create(newUser);

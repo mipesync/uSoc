@@ -6,7 +6,7 @@ import { User, UserSchema } from '../user/schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt/jwt.strategy';
-import { GoogleStrategy } from './oauth20/google.oauth20.ts/google.strategy';
+import { GoogleStrategy } from './oauth20/google.oauth20/google.strategy';
 
 @Module({
     imports: [
