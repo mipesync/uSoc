@@ -19,6 +19,9 @@ export class User{
 
     @Prop()
     googleId?: string;
+
+    @Prop()
+    yandexId?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

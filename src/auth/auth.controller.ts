@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/createUser.dto';
 import { SignInDto } from './dto/signIn.dto';
 import { GoogleAuthGuard } from './oauth20/google.oauth20/google-auth.guard';
+import { YandexAuthGuard } from './oauth20/yandex.oauth20/yandex-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -59,5 +60,17 @@ export class AuthController {
         return this.authService.signInWithGoogle(req).catch((e) => {
             throw e;
         });
+    }
+
+    @UseGuards(YandexAuthGuard)
+    @Get("yandex/login")
+    async signInWithYandex() {}
+  
+    @UseGuards(YandexAuthGuard)
+    @Get("yandex/redirect")
+    async signInWithYandexRedirect(@Req() req) {
+        return this.authService.signInWithYandex(req).catch((e) => {
+            throw e;
+        });        
     }
 }

@@ -84,7 +84,7 @@ export class AuthService {
                 username: data.user.email,
                 email: data.user.email,
                 googleId: data.user.id,
-                password: "google-auth",
+                password: process.env.AUTO_PASS,
                 avatarUrl: data.user.photo
             };
 
@@ -93,7 +93,34 @@ export class AuthService {
         } catch (e) {
             throw new Error(e);
         }
-      }
+    }
+
+    async signInWithYandex(data) {
+        if (!data.user) throw new BadRequestException();
+
+        let user = await this.userModel.findOne({ yandexId: data.user.id });        
+        if (user) return this.signin({ username: user.username, password: "", rememberMe: false, authStrategy: "yandex" });
+    
+        user = await this.userModel.findOne({ email: data.user.email });
+        if (user) {
+            throw new ForbiddenException("Пользователь уже существует, но аккаунт Yandex не привязан");
+        }
+    
+        try {
+            let newUser: User = {
+                username: data.user.email,
+                email: data.user.email,
+                yandexId: data.user.id,
+                password: process.env.AUTO_PASS,
+                avatarUrl: data.user.photo
+            };
+
+            await this.userModel.create(newUser);
+            return this.signin({ username: newUser.username, password: "", rememberMe: false, authStrategy: "yandex" });
+        } catch (e) {
+            throw new Error(e);
+        }
+    }
 
     private async passwordValidate(password: string, hash: string): Promise<boolean> {
         return await bcrypt.compare(password, hash);
