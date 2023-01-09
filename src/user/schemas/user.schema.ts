@@ -16,6 +16,15 @@ export class User{
 
     @Prop({ required: true })
     password: string;
+
+    @Prop()
+    lastActivity?: number;
+
+    @Prop()
+    googleId?: string;
+
+    @Prop()
+    yandexId?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
