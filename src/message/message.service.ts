@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { existsSync, mkdir, writeFile } from 'fs';
-import { Error, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { basename, extname, join } from 'path';
 import { Room, RoomDocument } from 'src/room/schemas/room.schema';
-import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class MessageService {

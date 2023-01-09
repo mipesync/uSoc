@@ -18,6 +18,9 @@ export class User{
     password: string;
 
     @Prop()
+    lastActivity?: number;
+
+    @Prop()
     googleId?: string;
 
     @Prop()

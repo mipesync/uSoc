@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Message, MessageSchema } from 'src/message/schemas/message.schema';
 import { Room, RoomSchema } from 'src/room/schemas/room.schema';
-import { UserService } from 'src/user/user.service';
 import { MessageController } from './message.controller';
 import { MessageService } from './message.service';
 

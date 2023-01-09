@@ -11,14 +11,16 @@ import { NewMessageDto } from "./dto/newMessage.dto";
 import { PinMessageDto } from "./dto/pinMessage.dto";
 import { Message, MessageDocument } from "../../message/schemas/message.schema";
 import { unlink } from "fs";
+import { CryptoManager } from "src/common/crypto-manager/crypto-manager";
 
+//TODO: Доделать шифрование
 @Injectable()
 export class MessageGateWayService {
     constructor(@InjectModel(Message.name) private readonly messageModel: Model<MessageDocument>,
         @InjectModel(Room.name) private readonly roomModel: Model<RoomDocument>,
-        @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>) {}
+        @InjectModel(UserRooms.name) private readonly userRoomsModel: Model<UserRoomsDocument>,
+        private readonly cryptoManager: CryptoManager) {}
 
-    //TODO: добавить проверку на тип (если не текст, то проверяем имя файла)
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
@@ -28,7 +30,7 @@ export class MessageGateWayService {
         }
 
         let result = await this.messageModel.create(newMessageDto);
-        return result.id;
+        return result;
     }
 
     async deleteMessage(deleteMessageDto: DeleteMessageDto) {

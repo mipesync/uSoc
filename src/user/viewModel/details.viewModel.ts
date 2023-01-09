@@ -3,4 +3,5 @@ export class DetailsViewModel {
     username: string;
     email: string;
     avatarUrl: string;
+    lastActivity: number;
 }

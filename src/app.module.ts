@@ -11,6 +11,7 @@ import { RoomModule } from './room/room.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MessageModule } from './message/message.module';
+import { JwtManager } from './auth/jwt/jwt.manager';
 
 @Module({
     imports: [
@@ -30,6 +31,6 @@ import { MessageModule } from './message/message.module';
         MessageModule
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [AppService, JwtManager],
 })
 export class AppModule {}

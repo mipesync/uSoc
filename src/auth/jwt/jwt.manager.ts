@@ -1,5 +1,8 @@
+import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt"
+import { JwtPayload } from "jsonwebtoken";
 
+@Injectable()
 export class JwtManager {
 	createJwtService(expires: string): JwtService {
 		return new JwtService({
@@ -18,11 +21,11 @@ export class JwtManager {
 
 		return {
 			access_token: jwtService.sign(payload),
-			expires: this.addMinutes(30)
+			expires: this.addMinutes(30).getTime()
 		}
 	}
 
-	async generateRefreshToken(userId: string) {
+	generateRefreshToken(userId: string) {
 		let jwtService = this.createJwtService('7d');
 
 		const payload = {
@@ -32,7 +35,7 @@ export class JwtManager {
 
 		return {
 			refresh_token: jwtService.sign(payload),
-			expires: this.addDays(7)
+			expires: this.addDays(7).getTime()
 		};
 	}
 
@@ -41,6 +44,14 @@ export class JwtManager {
 
 		const user = jwtService.verify(token);
 		return user;
+	}
+
+	decodeToken(token: string) {
+        const base64Payload = token.split('.')[1];
+        const payloadBuffer = Buffer.from(base64Payload, 'base64');
+        const updatedJwtPayload: JwtPayload = JSON.parse(payloadBuffer.toString()) as JwtPayload;
+
+		return updatedJwtPayload;
 	}
 
 	private addMinutes(minutes : number){

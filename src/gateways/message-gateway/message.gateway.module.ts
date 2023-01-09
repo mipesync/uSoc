@@ -7,6 +7,7 @@ import { Message, MessageSchema } from "../../message/schemas/message.schema";
 import { UserRooms, UserRoomsSchema } from "src/user/schemas/userRooms.schema";
 import { UserService } from "src/user/user.service";
 import { User, UserSchema } from "src/user/schemas/user.schema";
+import { CryptoManager } from "src/common/crypto-manager/crypto-manager";
 
 @Module({
     imports: [
@@ -16,6 +17,6 @@ import { User, UserSchema } from "src/user/schemas/user.schema";
             { name: UserRooms.name, schema: UserRoomsSchema},
             { name: User.name, schema: UserSchema}
         ])],
-    providers: [ MessageGateWayService, MessageGateway, UserService ]
+    providers: [ MessageGateWayService, MessageGateway, UserService, CryptoManager ]
 })
 export class MessageGatewayModule {}

@@ -24,6 +24,16 @@ export class UserController {
     }
 
     @HttpCode(HttpStatus.OK)
+    @Get('getUsers')
+    async getUsers() {
+        let users = await this.userService.getUsers().catch((err) => {
+            throw err;
+        });
+
+        return users;
+    }
+
+    @HttpCode(HttpStatus.OK)
     @Put('updateUsername')
     async updateUsername(@Body() updateUsernameDto: UpdateUsernameDto) {
         await this.userService.updateUsername(updateUsernameDto).catch((err) => {
