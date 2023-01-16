@@ -38,9 +38,8 @@ export class AuthService {
             refresh_token_expires = result.expires;
         }
 
-        //user.lastActivity = 
-
         return {
+            userId: user.id,
             access_token: tokenResult.access_token,
             expires: tokenResult.expires,
             refresh_token: refresh_token,
