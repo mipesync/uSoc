@@ -51,7 +51,6 @@ export class UserService {
         let detailsViewModel: DetailsViewModel = {
             id: user.id,
             username: user.username,
-            email: user.email,
             avatarUrl: user.avatarUrl === undefined ? null : 
                 user.avatarUrl.includes("http") ? user.avatarUrl : host.concat('/user/avatar/', user.avatarUrl),
             lastActivity: user.lastActivity

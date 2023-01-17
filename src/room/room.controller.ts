@@ -2,6 +2,7 @@ import { Body, Controller, FileTypeValidator, Get, HttpCode, HttpStatus, Param, 
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Request } from 'express';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { JwtManager } from 'src/auth/jwt/jwt.manager';
 import { MuteRoomDto } from './dto/muteRoom.dto';
 import { PinRoomDto } from './dto/pimRoom.dto';
 import { UpdatePermsDto } from './dto/updatePerms.dto';
@@ -10,7 +11,7 @@ import { RoomService } from './room.service';
 @UseGuards(JwtAuthGuard)
 @Controller('room')
 export class RoomController {
-    constructor(private readonly roomService: RoomService) {}
+    constructor(private readonly roomService: RoomService, private readonly jwtManager: JwtManager) {}
     
     @HttpCode(HttpStatus.OK)
     @Post('updateAvatar/:id')
@@ -89,10 +90,13 @@ export class RoomController {
     }
 
     @HttpCode(HttpStatus.OK)
-    @Get('getUserRooms/:userId')
-    async getUserRooms(@Param('userId') userId: string, @Req() req: Request) {
+    @Get('getUserRooms')
+    async getUserRooms(@Req() req: Request) {
+        const jwt = req.headers['authorization'].replace('Bearer ', '\0');
+        const payloadUser = this.jwtManager.decodeToken(jwt);
+        
         const host = req.protocol.concat('://', req.headers['host']);
-        let rooms = await this.roomService.getUserRooms(userId, host).catch((err) => {
+        let rooms = await this.roomService.getUserRooms(payloadUser.userid, host).catch((err) => {
             throw err;
         });
 

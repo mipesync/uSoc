@@ -133,7 +133,8 @@ export class RoomService {
             if (message) {
                 lastMessage = {
                     text: message.text,
-                    userId: message.userId
+                    userId: message.userId,
+                    date: message.date
                 }
             }
 

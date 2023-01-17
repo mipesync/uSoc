@@ -26,12 +26,7 @@ export class AuthController {
             throw e;
         });
         
-        return {
-                access_token: result.access_token,
-                expires: result.expires,
-                refresh_token: result.refresh_token,
-                refresh_token_expires: result.refresh_token_expires
-            };
+        return result;
     }
 
     @HttpCode(HttpStatus.OK)
