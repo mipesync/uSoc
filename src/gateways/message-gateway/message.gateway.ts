@@ -26,6 +26,7 @@ export class MessageGateway implements OnModuleInit {
                 message: 'Пользователь не состоит в чате'
             });
         }
+        
         let messageId = await this.messageService.newMessage(messageDto).catch((e) => {
             this.server.to(socket.id).emit('onException', {
                 statusCode: e.status,

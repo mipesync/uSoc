@@ -23,7 +23,7 @@ export class MessageGateWayService {
 
     async newMessage(newMessageDto: NewMessageDto) {
         let room = await this.roomModel.findById(newMessageDto.roomId);
-        if (room === null) throw new NotFoundException('Комнаты не существует');
+        if (room === null) throw new NotFoundException('Комнаты не существует');        
 
         if (newMessageDto.type !== 'text') {
             if (!newMessageDto.fileName) throw new BadRequestException('Поле "fileName" обязательно')
