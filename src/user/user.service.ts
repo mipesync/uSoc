@@ -45,14 +45,14 @@ export class UserService {
         return usersVM;
     }
 
-    async getDetails(userId: string, host: string) {
+    async getDetails(userId: string, host?: string) {
         let user = await this.getUserById(userId);
 
         let detailsViewModel: DetailsViewModel = {
             id: user.id,
             username: user.username,
             avatarUrl: user.avatarUrl === undefined ? null : 
-                user.avatarUrl.includes("http") ? user.avatarUrl : host.concat('/user/avatar/', user.avatarUrl),
+                user.avatarUrl.includes("http") ? user.avatarUrl : host?.concat('/user/avatar/', user.avatarUrl),
             lastActivity: user.lastActivity
         };
 
