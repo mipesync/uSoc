@@ -92,7 +92,16 @@ export class RoomService {
         let room = await this.roomModel.findById(roomId);
         if (room === null) throw new NotFoundException('Комнаты не существует');
 
-        let messages = await this.messageModel.find( { roomId: roomId, type: ['video', 'image', 'document', 'audio'] } );
+        let message = await this.messageModel.findOne({ roomId: roomId }).sort({ _id: -1 });
+
+        let lastMessage = null;
+        if (message) {
+            lastMessage = {
+                text: message.text,
+                userId: message.userId,
+                date: message.date
+            }
+        }
 
         let members = await this.userRoomsModel.find({ roomId: roomId });
 
@@ -100,9 +109,8 @@ export class RoomService {
             id: room.id,
             title: room.name,
             avatarUrl: room.avatarUrl === undefined ? null : _filePath.concat(room.avatarUrl),
-            attachments: messages,
-            members: members,
             membersCount: members.length,
+            lastMessage: lastMessage
         }
     }
 
