@@ -6,6 +6,7 @@ export class UserRoomsViewModel {
         userId?: string,
         text?: string
     };
+    membersCount: number;
     isPinned?: boolean;
     isMuted?: boolean;
 }
