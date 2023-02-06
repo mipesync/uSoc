@@ -14,6 +14,9 @@ export class Message{
     @Prop()
     fileName?: string;
 
+    @Prop()
+    fileUrl?: string;
+
     @Prop({ required: true })
     date: number;
 

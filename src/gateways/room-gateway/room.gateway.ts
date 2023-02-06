@@ -45,7 +45,7 @@ export class RoomGateway implements OnModuleInit {
         socket.join(joinToRoomDto.roomId);
 
         this.server.to(joinToRoomDto.roomId).emit('onJoinToRoom', {
-            message: `${joinToRoomDto.userId} присоединился к чату`
+            userId: joinToRoomDto.userId
         });
     }
 
@@ -63,7 +63,7 @@ export class RoomGateway implements OnModuleInit {
         socket.leave(leaveFromRoomDto.roomId);
 
         this.server.to(leaveFromRoomDto.roomId).emit('onLeaveFromRoom', {
-            message: `${leaveFromRoomDto.userId} покинул чат`
+            userId: leaveFromRoomDto.userId
         });
     }
 
@@ -79,8 +79,7 @@ export class RoomGateway implements OnModuleInit {
     async onUpdateRoomName(@MessageBody() updateRoomNameDto: UpdateRoomNameDto) {        
         this.server.to(updateRoomNameDto.roomId).emit('onUpdateRoomName', {
             roomId: updateRoomNameDto.roomId,
-            roomName: updateRoomNameDto,
-            message: `Имя чата было изменено на ${updateRoomNameDto.name}`
+            newRoomName: updateRoomNameDto.name
         });
 
         await this.gatewayService.updateRoomName(updateRoomNameDto);
@@ -89,8 +88,7 @@ export class RoomGateway implements OnModuleInit {
     @SubscribeMessage('updateRoomAvatar')
     async onUpdateRoomAvatar(@MessageBody() updateRoomAvatar: UpdateRoomAvatarDto) {
         this.server.to(updateRoomAvatar.roomId).emit('onUpdateRoomAvatar', {
-            message: `Аватар чата был изменён ${updateRoomAvatar.username}`,
-            avatarUrl: updateRoomAvatar.avatarUrl
+            newAvatarUrl: updateRoomAvatar.avatarUrl
         });
     }
 
@@ -99,7 +97,7 @@ export class RoomGateway implements OnModuleInit {
         await this.gatewayService.deleteAvatar(deleteAvatarDto);
 
         this.server.to(deleteAvatarDto.roomId).emit('onDeleteAvatar', {
-            message: `Аватар чата был удалён ${deleteAvatarDto.username}`
+            newAvatarUrl: null
         });
     }
 
@@ -120,7 +118,8 @@ export class RoomGateway implements OnModuleInit {
         });
 
         this.server.to(deleteUserDto.roomId).emit('onDeleteFromRoom', {
-            message: `${deleteUserDto.origin} исключил ${deleteUserDto.target}`
+            initiator: deleteUserDto.origin,
+            target: deleteUserDto.target
         });
     }
 
