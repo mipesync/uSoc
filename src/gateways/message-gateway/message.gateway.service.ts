@@ -30,7 +30,12 @@ export class MessageGateWayService {
         }
 
         let result = await this.messageModel.create(newMessageDto);
-        return result;
+        
+        if (typeof result === "string") {
+            return result;
+        } else {
+            return result.id;
+        }
     }
 
     async deleteMessage(deleteMessageDto: DeleteMessageDto) {

@@ -63,6 +63,27 @@ export class RoomController {
     }
 
     @HttpCode(HttpStatus.OK)
+    @Get('members/:roomId')
+    async getMembers(@Param('roomId') roomId: string) {
+        let result = await this.roomService.getRoomMembers(roomId).catch((err) => {
+            throw err;
+        });
+
+        return result;
+    }
+
+    @HttpCode(HttpStatus.OK)
+    @Get('attachments/:roomId')
+    async getAttachments(@Param('roomId') roomId: string, @Req() req: Request) {
+        const host = req.headers['host'];
+        let result = await this.roomService.getRoomAttachs(roomId).catch((err) => {
+            throw err;
+        });
+
+        return result;
+    }
+
+    @HttpCode(HttpStatus.OK)
     @Get('roomChat/:roomId')
     async getRoomChat(@Param('roomId') roomId: string, @Req() req: Request) {
         let result = await this.roomService.getRoomChat(roomId).catch((err) => {

@@ -160,6 +160,48 @@ export class RoomService {
 
         return rooms;
     }
+    
+    async getRoomMembers(roomId: string) {
+        let room = await this.roomModel.findById(roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let userRooms = await this.userRoomsModel.find({ roomId: roomId });
+        if (userRooms.length == 0) throw new NotFoundException('В чате нет участников');
+
+        let users: any[] = [];
+
+        for (const userRoom of userRooms) {
+            let userDto: any = {
+                userId: userRoom.userId,
+                role: userRoom.role
+            };
+
+            users.push(userDto);
+        }
+
+        return users;
+    }
+
+    async getRoomAttachs(roomId: string) {
+        let room = await this.roomModel.findById(roomId);
+        if (room === null) throw new NotFoundException('Комнаты не существует');
+
+        let messages = await this.messageModel.find({roomId: roomId, type: {$in:["document", "video", "image"]}});
+        
+        let attachments: any[] = [];
+
+        for (const message of messages) {
+            attachments.push({
+                text: message.text,
+                type: message.type,
+                fileName: message.fileName,
+                fileUrl: message.fileUrl,
+                date: message.date,
+                userId: message.userId
+            });
+        }
+        return attachments;
+    }
 
     async muteRoom(muteRoomDto: MuteRoomDto) {
         let room = await this.roomModel.findById(muteRoomDto.roomId);
