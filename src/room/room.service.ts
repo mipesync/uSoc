@@ -146,11 +146,14 @@ export class RoomService {
                 }
             }
 
+            let members = await this.userRoomsModel.find({ roomId: userRoom.roomId });
+
             let roomVM: UserRoomsViewModel = {
                 roomId: userRoom.roomId,
                 avatarUrl: room.avatarUrl === undefined ? null : host.concat(_filePath, room.avatarUrl),
                 name: room.name,
                 lastMessage: lastMessage,
+                membersCount: members.length,
                 isMuted: userRoom.isMuted,
                 isPinned: userRoom.isPinned
             };
