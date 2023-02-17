@@ -29,6 +29,8 @@ export class MessageGateWayService {
             if (!newMessageDto.fileName) throw new BadRequestException('Поле "fileName" обязательно')
         }
 
+        newMessageDto.date = Date.now().toString()
+
         let result = await this.messageModel.create(newMessageDto);
         
         if (typeof result === "string") {

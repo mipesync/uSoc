@@ -57,7 +57,10 @@ export class RoomController {
         let result = await this.roomService.getRoomDetails(roomId).catch((err) => {
             throw err;
         });
-        result.avatarUrl = req.protocol.concat('://', req.headers['host'], result.avatarUrl);
+        if (result.avatarUrl !== null) {
+            result.avatarUrl = req.protocol.concat('://', req.headers['host'], result.avatarUrl);
+        }
+        else { result.avatarUrl = null; }
 
         return result;
     }

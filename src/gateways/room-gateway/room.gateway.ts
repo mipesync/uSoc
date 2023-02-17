@@ -45,7 +45,8 @@ export class RoomGateway implements OnModuleInit {
         socket.join(joinToRoomDto.roomId);
 
         this.server.to(joinToRoomDto.roomId).emit('onJoinToRoom', {
-            userId: joinToRoomDto.userId
+            userId: joinToRoomDto.userId,
+            roomId: joinToRoomDto.roomId
         });
     }
 
@@ -60,11 +61,12 @@ export class RoomGateway implements OnModuleInit {
             stop();
         });
 
-        socket.leave(leaveFromRoomDto.roomId);
-
         this.server.to(leaveFromRoomDto.roomId).emit('onLeaveFromRoom', {
-            userId: leaveFromRoomDto.userId
+            userId: leaveFromRoomDto.userId,
+            roomId: leaveFromRoomDto.roomId
         });
+
+        socket.leave(leaveFromRoomDto.roomId);
     }
 
     @SubscribeMessage('connectToRooms')

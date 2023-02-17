@@ -12,7 +12,7 @@ export class JwtManager {
 	}
 
 	generateAccessToken(user: any) {
-		let jwtService = this.createJwtService('30m');
+		let jwtService = this.createJwtService('1d');
 
 		const payload = {
 			username: user.username,
@@ -21,7 +21,7 @@ export class JwtManager {
 
 		return {
 			access_token: jwtService.sign(payload),
-			expires: this.addMinutes(30).getTime()
+			expires: this.addDays(1).getTime()
 		}
 	}
 

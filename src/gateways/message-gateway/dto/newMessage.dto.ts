@@ -4,8 +4,6 @@ export class NewMessageDto {
     @IsNotEmpty()
     text: string;
 
-    @IsNotEmpty()
-    @IsDate()
     date: string;
     
     to?: string;
